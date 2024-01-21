@@ -9,7 +9,6 @@ import { Notification } from "../../models/notificationModel";
 
 export const create_post = async (req: Request, res: Response) => {
   try {
-    console.log("here");
     const { caption, userId, postImage } = req.body;
     const uploadResponse = await cloudinary.uploader.upload(postImage, {
       upload_preset: "linguaBlend",

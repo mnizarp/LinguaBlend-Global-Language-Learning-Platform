@@ -42,14 +42,14 @@ export const get_allsessions = async (req: Request, res: Response) => {
 
 export const delete_session = async (req: Request, res: Response) => {
   try {
-    console.log('gere')
+
     const host = req.userId;
     const session = await Session.findOne({ host });
     await Session.deleteOne({ host });
     await SessionMessage.deleteMany({ session_id: session?._id });
 
     res.status(200).json({ message: "session deleted" });
-    console.log('eter')
+    
   } catch (error) {
     console.log(error);
     res.status(400).json({ message: "session deleting failed" });
@@ -85,7 +85,7 @@ export const leave_session = async (req: Request, res: Response) => {
 
 export const sendSessionMessage = async (req: Request, res: Response) => {
   try {
-    console.log('herererer')
+    
     const { message, sessionId } = req.body;
     const sender_id = req.userId;
     const newsessionmessage = new SessionMessage({
@@ -119,7 +119,7 @@ export const getSessionMessages = async (req: Request, res: Response) => {
 
 export const getSessionMembers = async (req: Request, res: Response) => {
   try {
-    console.log('herer get session members')
+   
     const { sessionId } = req.body;
     const allmembers = await Session.find(
       { _id: sessionId },

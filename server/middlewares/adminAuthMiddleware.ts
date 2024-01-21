@@ -33,7 +33,7 @@ const adminProtect = async (
         ) as JwtPayload;
 
         // const che=await User.findById(decoded?.userId ).select('-password')
-        const userId = decoded?.userId;
+        // const userId = decoded?.userId;
         // req.userId=userId
         next();
       } catch (error) {

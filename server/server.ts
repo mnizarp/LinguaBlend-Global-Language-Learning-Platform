@@ -34,11 +34,26 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.static(path.join(__dirname, 'public')));
 connectDb()
    
-
 app.use('/api/users/',userRouter)
 app.use('/api/chats/',chatRouter)
 app.use('/api/admin/',adminRouter)
 app.use('/api/session/',sessionRouter)
+
+if(process.env.NODE_ENV==='production'){
+ 
+  const parentDir = path.resolve(__dirname, '..');
+  const staticMiddleware = express.static(path.join(parentDir, 'client', 'dist'));
+
+  app.use(staticMiddleware);
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(parentDir, 'client', 'dist', 'index.html'));
+  });
+
+}else{
+  app.get('/',(req,res)=>res.send('Server is ready'))
+}
+
 app.use(notFound)
 app.use(errorHandler)
 const port=process.env.PORT || 9009

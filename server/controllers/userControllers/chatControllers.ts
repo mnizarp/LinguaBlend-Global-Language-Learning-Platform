@@ -144,7 +144,6 @@ export const clear_unread_messages = async (
     const userId = req.userId;
     const {chatId} = req.body
 
-    console.log(chatId)
     await Message.updateMany(
       { user_id: userId,chat_id:chatId },
       { $set: { unread: false } }
