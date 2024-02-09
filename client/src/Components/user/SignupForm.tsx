@@ -22,6 +22,10 @@ const SignupSchema=Yup.object().shape({
           return letterCount >= 3;
         }
       )
+      .matches(
+        /^(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/,
+        'Password should contain at least one special character'
+    )
     .min(5,'Password must contain 5 characters'),
     confirmPassword:Yup.string()
     .required('Confirm your password')

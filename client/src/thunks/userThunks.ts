@@ -12,16 +12,12 @@ type UserInfoType = {
   isGoogleLogin: boolean;
 };
 
-// type ExtraArgumentType = {
-//   checkBlockStatus: typeof checkBlockStatus; // Add any other thunks or functions you need
-// };
 
 export interface ExtraArgumentType {
   checkBlockStatus: (userInfo: UserInfoType, token: string, navigate: ReturnType<typeof useNavigate>, auth0Logout: () => void) => ThunkAction<void, RootState, unknown, AnyAction>;
-  // Add any other thunks or functions you need
+  
 }
 
-// export const checkBlockStatus = (userInfo:UserInfoType,token:string, navigate:ReturnType<typeof useNavigate>,auth0Logout:() => void) => async (dispatch: Dispatch<AnyAction>) => {
   export const checkBlockStatus = (userInfo: UserInfoType, token: string, navigate: ReturnType<typeof useNavigate>, auth0Logout: () => void): ThunkAction<Promise<void>, RootState, ExtraArgumentType, AnyAction> => async (dispatch: ThunkDispatch<RootState, ExtraArgumentType, AnyAction>) => {
 
 try {

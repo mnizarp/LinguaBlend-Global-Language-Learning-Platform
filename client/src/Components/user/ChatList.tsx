@@ -122,7 +122,7 @@ const ChatList = ({setChatBox,chatBox}:ChatListProps) => {
                     <img className='w-10 h-10 rounded-full' src={`${chat?.users[0]?.photo.url}`} alt=''/>
                     <div className='w-[70%] md:w-[77%] '>
                        <h1 className='font-bold text-md'>{chat?.users[0]?.name}</h1>
-                       <h1 className='text-xs'>{chat?.latest_message?.content}</h1>
+                       <h1 className='text-xs overflow-hidden whitespace-nowrap overflow-ellipsis '>{chat?.latest_message?.content}</h1>
                     </div>
                     <div className='w-[10%] flex flex-col items-center space-y-1 justify-center'>
                       {

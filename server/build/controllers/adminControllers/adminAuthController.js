@@ -12,13 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllPosts = exports.getsessions = exports.get_new_users = exports.get_user_details = exports.get_user_reports = exports.user_block_unblock = exports.get_users = exports.adminLogin = void 0;
+exports.getAdminContacts = exports.getAllPosts = exports.getsessions = exports.get_new_users = exports.get_user_details = exports.get_user_reports = exports.user_block_unblock = exports.get_users = exports.adminLogin = void 0;
 const userModel_1 = require("../../models/userModel");
 const mongoose_1 = __importDefault(require("mongoose"));
 const reportModel_1 = require("../../models/reportModel");
 const sessionModel_1 = require("../../models/sessionModel");
 const postModel_1 = require("../../models/postModel");
 const generateToken_1 = __importDefault(require("../../utils/generateToken"));
+const contactAdminModel_1 = require("../../models/contactAdminModel");
 const adminLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
@@ -210,3 +211,14 @@ const getAllPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getAllPosts = getAllPosts;
+const getAdminContacts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const admincontacts = yield contactAdminModel_1.ContactAdmin.find({}).sort({ createdAt: -1 });
+        res.status(200).json(admincontacts);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'admin contacts fetching failed' });
+    }
+});
+exports.getAdminContacts = getAdminContacts;

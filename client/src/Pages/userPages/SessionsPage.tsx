@@ -7,7 +7,7 @@ import SessionBox from './SessionBox'
 import JoinSessionConfirm from '../../Components/user/JoinSessionConfirm'
 import axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
-import { BASE_URL, PHOTO_BASE_URL } from '../../constants'
+import { BASE_URL } from '../../constants'
 import { saveSession } from '../../slices/sessionSlice'
 import { RootState } from '../../store/rootReducer'
 
@@ -98,7 +98,7 @@ return (
                 className="w-full md:w-[30%] h-[17%] border-2 border-black rounded-lg m-1 flex space-x-2 cursor-pointer"
               >
                 <div className="w-[25%] h-full flex flex-col items-center justify-center">
-                  <img className="w-10 h-10" src={`${PHOTO_BASE_URL}${session.language?.flag}`} alt="" />
+                  <img className="w-10 h-10" src={`${session.language?.flag}`} alt="" />
                   <h1 className="text-sm font-semibold">{session.language.language}</h1>
                 </div>
                 <div className="w-[75%] h-full flex flex-col justify-center">

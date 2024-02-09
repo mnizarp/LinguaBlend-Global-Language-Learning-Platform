@@ -4,6 +4,7 @@ import { RootState } from "../../store/rootReducer"
 import { useState } from "react"
 import { useEditCommentMutation } from "../../slices/usersApiSlice"
 import { useNavigate } from "react-router-dom"
+import * as Yup from 'yup';
 
 interface CommentProps{
   setCommentAdded:React.Dispatch<React.SetStateAction<string>>
@@ -33,11 +34,17 @@ const Comment:React.FC<CommentProps>=(props)=>{
   const navigate=useNavigate()
   const [editComment]=useEditCommentMutation()
 
+  const commentValidationSchema = Yup.string()
+    .required('Comment is required')
+    .min(1, 'Comment must contain at least 1 character');
+
   const handleSubmitButton=async()=>{
       try {
         const token=userInfo?.token
         props.setCommentAdded('start edit')
-        await editComment({token,datas:{commentId:props?.comment?._id,editedComment}}).unwrap()
+        const trimmedComment = editedComment.trim();
+          await commentValidationSchema.validate(trimmedComment);
+        await editComment({token,datas:{commentId:props?.comment?._id,editedComment:trimmedComment}}).unwrap()
         setIsEditing(false)
         props.setCommentAdded('edited')
       } catch (error) {
@@ -56,7 +63,12 @@ const Comment:React.FC<CommentProps>=(props)=>{
              {
                 props?.comment?.user?._id === userInfo?._id ?
                 isEditing?
+
+                editedComment ?
                 <div onClick={handleSubmitButton} className="h-4 cursor-pointer bg-blue-500 px-1 rounded-sm"><h1 className="text-xs text-white">Save</h1></div>
+                :
+                <div  className="h-4 cursor-not-allowed bg-blue-500 px-1 rounded-sm"><h1 className="text-xs text-white">Save</h1></div>
+
                 :
                 <img onClick={handleEditButton} className="w-4 h-4 cursor-pointer" src="/assets/icons/icons8-edit-30.png" alt=""/>
                 :

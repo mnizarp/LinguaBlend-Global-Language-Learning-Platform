@@ -1,5 +1,5 @@
-import axios from "axios"
-import { useState } from "react"
+
+import { ChangeEvent, useState } from "react"
 import { Button } from "../../../@/components/ui/button"
 import {
   Dialog,
@@ -13,8 +13,10 @@ import {
 import { Input } from "../../../@/components/ui/input"
 import { Label } from "../../../@/components/ui/label"
 import toast from "react-hot-toast"
-import { BASE_URL } from "../../constants"
-
+import { useSelector } from "react-redux"
+import { RootState } from "../../store/rootReducer"
+import { useAddCountryMutation } from "../../slices/adminApiSlice"
+import * as Yup from 'yup';
 
 interface AddNewCountryProps {
   setCountryAdded: React.Dispatch<React.SetStateAction<string>>;
@@ -22,38 +24,55 @@ interface AddNewCountryProps {
 
 export function AddNewCountry({setCountryAdded}:AddNewCountryProps) {
 
+
+
+    const {adminInfo}=useSelector((state:RootState)=>state.admin)
     const [country,setCountry]=useState('')  
-    const [flag,setFlag]=useState<FileList |string|null>('')
+    const [flag,setFlag]=useState<FileList|ArrayBuffer |string|null>('')
     const [isOpen,setIsOpen]=useState(true)
+
+
+    const handlePhotoSelect = (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e?.target?.files?.[0];
+      if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+              const base64String = reader.result;
+              setFlag(base64String);
+          };
+          reader.readAsDataURL(file);
+      }
+  };
+  
+
+    const [addCountry]=useAddCountryMutation()
+
+    const countryValidationSchema = Yup.string()
+    .required('country is required')
+    .min(3, 'country must contain at least 3 character');
+
     const handleSave=async()=>{
-        try{
+      try{
+       const trimmedcountry = country.trim();
+          await countryValidationSchema.validate(trimmedcountry);
+           await addCountry({token:adminInfo?.token,datas:{flag,country:trimmedcountry}})
            
-            const formData=new FormData()
-            if(flag){
-              formData.append('flag',flag[0])
-            }            
-            formData.append('country',country)
-            const response=await axios.post(`${BASE_URL}admin/addnewcountry`,  formData, {
-                headers: {
-                  'Content-Type': 'multipart/form-data', 
-                }             
-              });
-            if(response.status==200){
-              setCountryAdded('yes')
-              setIsOpen(false)
-              setCountry('')
-              setFlag('')
-            }
-        }catch (error: unknown) {
-          const apiError = error as { response?: { status?: number } };
+            setCountryAdded('yes')
+            setIsOpen(false)
+            setCountry('')
+            setFlag('')
         
-          if (apiError?.response?.status === 401) {
-            toast.error('Country Already exists');
-          } else {
-            toast.error('An error occurred. Cannot Add country');
-          }
+      }catch (error: unknown) {
+        const apiError = error as { response?: { status?: number } };
+      
+        if (apiError?.response?.status === 401) {
+          toast.error('Country Already exists');
+        } else {
+          toast.error('An error occurred. Cannot Add country');
         }
-    }
+      }
+  }
+
   return (
     
     
@@ -92,7 +111,8 @@ export function AddNewCountry({setCountryAdded}:AddNewCountryProps) {
             <Input
               id="flag"
               type="file"
-              onChange={(e)=>setFlag(e.target.files)}
+              // onChange={(e)=>setFlag(e.target.files)}
+              onChange={handlePhotoSelect}
               className="col-span-3"
             />
           </div>

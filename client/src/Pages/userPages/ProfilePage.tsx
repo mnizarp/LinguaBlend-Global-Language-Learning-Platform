@@ -1,18 +1,24 @@
 import HeadMobile from "../../Components/user/HeadMoblile"
 import MenuBar from "../../Components/user/MenuBar"
 import FootMobile from "../../Components/user/FootMobile"
-import {  PHOTO_BASE_URL } from "../../constants"
-import { useSelector } from "react-redux"
+import { useSelector ,useDispatch} from "react-redux"
 import ProfilePost from "../../Components/user/ProfilePost"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useCallback, useEffect, useState } from "react"
 import { RootState } from "../../store/rootReducer"
 import Suggestion from "../../Components/user/Suggestion"
-import { useFollowUnfollowMutation, useGetAllSuggestionsMutation, useGetProfilePostsMutation, useGetUserDetailsMutation, useReportUserMutation } from "../../slices/usersApiSlice"
+import { useFollowUnfollowMutation, useGetAllSuggestionsMutation, useGetProfilePostsMutation, useGetSavedMutation, useGetUserDetailsMutation, useReportUserMutation } from "../../slices/usersApiSlice"
 import io from 'socket.io-client'
 import { Socket } from 'socket.io-client';
 import { ENDPOINT } from "../../constants"
 let socket:Socket
+
+import { useAuth0 } from "@auth0/auth0-react"
+import { ExtraArgumentType } from "../../thunks/userThunks";
+import { AnyAction } from "@reduxjs/toolkit";
+import { checkBlockStatus } from "../../thunks/userThunks"
+import { ThunkDispatch } from 'redux-thunk';
+import Post from "../../Components/user/Post"
 
 const ProfilePage:React.FC=()=>{
 
@@ -63,6 +69,7 @@ const ProfilePage:React.FC=()=>{
         const { user } = state
 
         const [allPosts,setAllPosts]=useState([])
+        const [allSavedPosts,setAllSavedPosts]=useState([])
         const navigate=useNavigate()
 
         const [allsuggestions,setAllsuggestions]=useState([])
@@ -80,13 +87,14 @@ const ProfilePage:React.FC=()=>{
 
      const [getUserDetails]=useGetUserDetailsMutation()
      const [getProfilePosts]=useGetProfilePostsMutation()
+     const [getSaved]=useGetSavedMutation()
 const fetchData =useCallback( async () => {
   try {
      const token=userInfo?.token
      const userDetailsResponse = await getUserDetails({token,userId}).unwrap()
      const allPostsResponse = await getProfilePosts({token,userId}).unwrap()
-
-
+     
+     
      setUserDetails(userDetailsResponse[0]);
      setFollowings(userDetailsResponse[0]?.followingDetails)
      setFollowers(userDetailsResponse[0]?.followersDetails)    
@@ -97,7 +105,7 @@ const fetchData =useCallback( async () => {
       }
 
       setAllPosts(allPostsResponse.allposts);
-    
+      
   } catch (error) {
     console.log(error);
   }
@@ -111,20 +119,25 @@ useEffect(()=>{
   }  
 },[user,userInfo?._id])
 
+const dispatch = useDispatch<ThunkDispatch<RootState, ExtraArgumentType, AnyAction>>();
+const {logout:auth0Logout}=useAuth0()
+
 
 useEffect(()=>{
     if(!userInfo){
-        navigate('')
+        navigate('/')
     }else if(userInfo?.isProfileFinished===false){
         navigate('/finishprofilepage')
     }else{
       if (!userId) return;
+      dispatch(checkBlockStatus(userInfo,userInfo?.token,navigate,auth0Logout))       
+
       setShowFollowers(false)
       setShowFollowings(false)
       fetchData()
       getSuggestions()
     }
-},[navigate, userId,following,fetchData,userInfo,getSuggestions])
+},[navigate, userId,following,fetchData,userInfo,getSuggestions,dispatch,auth0Logout])
 
 
       const [, setsocketConnected] = useState(false)
@@ -177,6 +190,21 @@ useEffect(()=>{
     }
    }
 
+   const [isSavedOpen,setIsSavedOpen]=useState(false)
+
+   const handleOpenSavedButton=async()=>{
+    try{
+      setIsSavedOpen(!isSavedOpen)
+      
+        const token=userInfo?.token
+        const allSaved=await getSaved({token}).unwrap()
+        setAllSavedPosts(allSaved)
+        
+    }catch(error){
+      console.log(error)
+    }
+   }
+
     return(
         <div className="w-screen  h-screen flex flex-col  md:flex-row ">
                 <div className="fixed w-screen h-[8%] top-0 md:hidden">
@@ -195,7 +223,7 @@ useEffect(()=>{
                            {/* name and country */}
                            <div className="flex items-center space-x-1 md:space-x-2">
                            <h1 className="text-sm md:text-lg font-bold">{userDetails?.name} </h1>
-                           <img className="w-4 h-4 md:w-6 md:h-6" src={`${PHOTO_BASE_URL}${userDetails?.country?.flag}`} alt="" />
+                           <img className="w-4 h-4 md:w-6 md:h-6" src={`${userDetails?.country?.flag}`} alt="" />
                            </div>
                            {/* profile image */}
                           
@@ -203,7 +231,7 @@ useEffect(()=>{
                            
                             <div className="flex items-center space-x-1 ">
                             <h1 className="text-xs md:text-sm md:font-semibold">{userDetails?.language?.language}</h1>
-                            <img className="w-4 h-4 md:w-5 md:h-5" src={`${PHOTO_BASE_URL}${userDetails?.language?.flag}`} alt="" />
+                            <img className="w-4 h-4 md:w-5 md:h-5" src={`${userDetails?.language?.flag}`} alt="" />
                             </div>
                          </div>
                          {/* follow part */}
@@ -280,7 +308,10 @@ useEffect(()=>{
                              
                                {
                                    userDetails?._id ==userInfo?._id ?
-                                   <button onClick={handleEditProfileButton} className="bg-slate-300  md:p-2 w-32 h-6 md:h-10 rounded-2xl text-black font-semibold">Edit Profile</button>
+                                   <div className="flex space-x-3 md:space-x-5">
+                                   <button onClick={handleEditProfileButton} className="bg-slate-300  md:p-2 w-20 md:w-32 h-6 md:h-10 rounded-2xl text-black text-sm md:text-md font-semibold">Edit Profile</button>
+                                   <button onClick={handleOpenSavedButton} className={` ${isSavedOpen ? "bg-black" : "bg-slate-500" }  md:p-2 w-20 md:w-32 h-6 md:h-10 rounded-2xl text-slate-50 text-sm md:text-md font-semibold`}>{isSavedOpen ? "AllPosts" : "SavedPosts" }</button>
+                                   </div>
                                      :
                                      <div className="flex space-x-3 md:space-x-5">
                                        {
@@ -319,20 +350,42 @@ useEffect(()=>{
                     
                      {/* post part */}
                      <div className=" container space-y-5 md:space-y-10 py-5">
-                     {
-                      allPosts?.length>0 ?
-                       allPosts?.map((post)=>(
-                             <ProfilePost post={post} />
-                       )    
-                       )
+                      { !isSavedOpen ?
+
+                        allPosts?.length>0 ?
+                         allPosts?.map((post)=>(
+                               <ProfilePost post={post} />
+                         )    
+                         )
+                         :
+                         <div className="w-full h-full container p-10 border flex flex-col justify-center space-y-5 items-center ">
+                         <div className="rounded-full w-40 h-40 border-2 flex items-center justify-center border-black">
+                           <img src="/assets/icons/icons8-camera-100.png" alt=""/>
+                         </div>
+                         <h1 className="text-2xl font-bold">No Posts Yet</h1>
+                         </div>
+                       
                        :
-                       <div className="w-full h-full container p-10 border flex flex-col justify-center space-y-5 items-center ">
-                       <div className="rounded-full w-40 h-40 border-2 flex items-center justify-center border-black">
-                         <img src="/assets/icons/icons8-camera-100.png" alt=""/>
+                       <div>
+                          <h1 className="text-lg font-bold md:text-2xl">Saved Posts</h1>
+                          <div className="w-10 h-2 md:h-4"></div>
+                          {
+                          allSavedPosts?.length>0 ?
+                         allSavedPosts?.map((post)=>(
+                               <Post post={post} />
+                         )    
+                         )
+                         :
+                         <div className="w-full h-full container p-10 border flex flex-col justify-center space-y-5 items-center ">
+                         <div className="rounded-full w-40 h-40 border-2 flex items-center justify-center border-black">
+                           <img src="/assets/icons/icons8-camera-100.png" alt=""/>
+                         </div>
+                         <h1 className="text-2xl font-bold">No Posts Saved Yet</h1>
+                         </div>
+                          }
                        </div>
-                       <h1 className="text-2xl font-bold">No Posts Yet</h1>
-                       </div>
-                     }
+                    }
+                     
 
                      </div>
                    </div>

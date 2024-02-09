@@ -15,7 +15,11 @@ interface FormValues{
     password:string
 }
 
-const LoginForm:React.FC=()=>{
+interface LoginFormProps{
+    setContactAdminOpen:React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const LoginForm:React.FC<LoginFormProps>=({setContactAdminOpen})=>{
     const initialValues:FormValues={
         email:'',
         password:''
@@ -33,6 +37,7 @@ const LoginForm:React.FC=()=>{
             const apiError = error as  { status?: number } ;
             if(apiError?.status===402){
                 toast.error('Account is blocked by Admin')
+                setContactAdminOpen(true)
             }else if(apiError?.status===401){
                 toast.error('Invalid Email or Password')
             }else{

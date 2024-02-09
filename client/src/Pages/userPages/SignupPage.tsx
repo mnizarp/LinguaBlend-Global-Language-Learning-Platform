@@ -7,6 +7,7 @@ import toast from "react-hot-toast"
 import axios from "axios"
 import { BASE_URL } from "../../constants"
 import { RootState } from "../../store/rootReducer"
+import MyTimer from "../../Components/user/MyTimer"
 
 const SignupPage:React.FC=()=>{
 
@@ -77,6 +78,10 @@ const SignupPage:React.FC=()=>{
         }  
       }
     }
+
+    const time = new Date();
+  time.setSeconds(time.getSeconds() + 60);
+
     return(
         <div className="bg-sky-600 grid  place-items-center w-full h-screen p-2" >
             <div className="bg-sky-700 w-[90%]  h-[90%] rounded-lg container flex flex-col justify-center items-center space-y-10
@@ -96,8 +101,10 @@ const SignupPage:React.FC=()=>{
                               <input onChange={handleN3} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n3} />
                               <input onChange={handleN4} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n4} />
                       </div>
+                      <MyTimer expiryTimestamp={time} userEmail={email} /> 
                       <button onClick={handleVerify} className="border-2  bg-emerald-300  text-white h-7 text-xs p-1 w-max bg-opacity-60 rounded-lg
-                                          md:h-8 md:text-sm">Verify</button>                                  
+                                          md:h-8 md:text-sm">Verify</button>
+                                                                           
                       </div>
                 }
                 

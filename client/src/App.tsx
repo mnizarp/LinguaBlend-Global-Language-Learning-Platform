@@ -15,6 +15,7 @@ import ProfileView from "./Pages/adminPages/ProfileView"
 import ChatsPage from "./Pages/userPages/ChatsPage"
 import SessionsPage from "./Pages/userPages/SessionsPage"
 import NotificationsPage from "./Pages/userPages/NotificationsPage"
+import MessagesPage from "./Pages/adminPages/MessagesPage"
 
 const router =createBrowserRouter([
   {
@@ -81,6 +82,10 @@ const router =createBrowserRouter([
   {
     path:'/profilemanagement',
     element:<ProfileView/>
+  },
+  {
+    path:'/adminmessages',
+    element:<MessagesPage/>
   }
  
 ])

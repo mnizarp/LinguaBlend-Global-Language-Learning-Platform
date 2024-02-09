@@ -18,6 +18,7 @@ import { useGetPostsMutation, useUserSearchMutation } from "../../slices/usersAp
 import { useAuth0 } from "@auth0/auth0-react"
 import { ExtraArgumentType } from "../../thunks/userThunks";
 import { AnyAction } from "@reduxjs/toolkit";
+import { Toaster } from "react-hot-toast";
 
 const HomePage:React.FC=()=>{
 
@@ -119,7 +120,7 @@ interface User{
     return(
 
 <div className="w-screen h-screen flex flex-col md:flex-row">
-  <div className="fixed w-screen h-[8%] top-0 md:hidden">
+  <div className="fixed w-screen h-[8%] top-0 md:hidden z-50">
     <HeadMobile pagename="Home" />
   </div>
 
@@ -172,7 +173,7 @@ interface User{
         </div>
       )}
     </div>
-
+     <Toaster/>
     <AddPost setNewPostAdded={setNewPostAdded} handlePhotoSelect={handlePhotoSelect} image={image} />
 
     {postImageSettingBox && (

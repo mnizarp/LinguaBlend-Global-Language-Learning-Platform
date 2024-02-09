@@ -8,19 +8,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.country_list_unlist = exports.getCountries = exports.addNewCountry = void 0;
 const countryModel_1 = require("../../models/countryModel");
+const cloudinary_1 = __importDefault(require("../../utils/cloudinary"));
 const addNewCountry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
-        const { country } = req.body;
+        const { country, flag } = req.body;
         const countryInCapital = country.toUpperCase();
         const isExists = yield countryModel_1.Country.findOne({ country: countryInCapital });
         if (!isExists) {
+            const uploadResponse = yield cloudinary_1.default.uploader.upload(flag, {
+                upload_preset: "linguaBlend",
+            });
             const newcountry = new countryModel_1.Country({
                 country: countryInCapital,
-                flag: (_a = req.file) === null || _a === void 0 ? void 0 : _a.filename,
+                flag: uploadResponse.url,
                 list: true,
             });
             yield newcountry.save();

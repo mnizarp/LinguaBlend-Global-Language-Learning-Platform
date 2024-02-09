@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { Report } from "../../models/reportModel";
 import cloudinary from "../../utils/cloudinary";
 import { Notification } from "../../models/notificationModel";
+import { Saved } from "../../models/savedModel";
 
 
 export const create_post = async (req: Request, res: Response) => {
@@ -260,3 +261,113 @@ export const edit_comment = async (req: Request, res: Response) => {
     res.status(400).json({ message: "comment editing failed" });
   }
 };
+
+export const savePost=async(req:Request,res:Response)=>{
+  try {
+    const userId=req.userId
+    const {postId}=req.body
+    const newsavedpost= new Saved({
+      post_id:postId,
+      user_id:userId
+    })
+    await newsavedpost.save()
+    res.status(200).json({message:'post saved successfully'})
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({message:'post saving failed'})
+  }
+}
+
+export const unsavePost=async(req:Request,res:Response)=>{
+  try{
+    const userId=req.userId
+    const {postId}=req.body
+    await Saved.deleteOne({user_id:userId,post_id:postId})
+    res.status(200).json({message:'post unsaved successfully'})
+  }catch(error){
+    console.log(error)
+    res.status(400).json({message:'post unsaving failed'})
+  }
+}
+
+export const checkSaved=async(req:Request,res:Response)=>{
+  try{
+    const userId=req.userId
+    const {postId}=req.body
+   const isSaved= await Saved.findOne({user_id:userId,post_id:postId})
+    if (isSaved) {
+      res.status(200).json({message:'post saved checking successfull',saved:true})
+
+    }else{
+      res.status(200).json({message:'post saved checking successfull',saved:false})
+
+    }
+  }catch(error){
+    console.log(error)
+    res.status(400).json({message:'post saved checking failed'})
+  }
+}
+
+export const get_saved_posts=async(req:Request,res:Response)=>{
+  try {
+    const userId=req.userId?.toString()
+
+    const userIdObject = new mongoose.Types.ObjectId(userId);
+  
+    const savedpostids=await Saved.aggregate([
+      {
+        $match:{user_id:userIdObject}
+      },
+      {
+        $group:{
+          _id:null,
+           postIds:{$push:"$post_id"}
+        }
+      },
+      {
+        $project:{
+          postIds:1
+        }
+      }
+    ]) 
+       if(savedpostids[0]){
+    const allsavedposts = await Post.aggregate([
+      {
+        $match: { isDeleted: false, isHide: false, _id:{$in:[...savedpostids[0].postIds]} },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: "$user",
+      },
+
+      {
+        $project: {
+          _id: 1,
+          post_image: 1,
+          likes: 1,
+          caption: 1,
+          "user.name": 1,
+          "user._id": 1,
+          "user.photo": 1,
+          createdAt: 1,
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+    ]);
+    res.status(200).json(allsavedposts)
+  }
+  res.status(200)
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({message:'fetching saved posts failed'})
+  }
+}

@@ -2,16 +2,23 @@ import  { useCallback, useEffect, useState } from 'react'
 import HeadMobile from '../../Components/user/HeadMoblile'
 import MenuBar from '../../Components/user/MenuBar'
 import FootMobile from '../../Components/user/FootMobile'
-import {  useSelector } from 'react-redux'
 import Suggestion from '../../Components/user/Suggestion'
 import Notification from '../../Components/user/Notification'
 import { RootState } from '../../store/rootReducer'
 import { useClearAllUnreadNotificationsMutation, useGetAllNotificationsMutation, useGetAllSuggestionsMutation } from '../../slices/usersApiSlice'
 
+import { checkBlockStatus } from "../../thunks/userThunks"
+import { useDispatch, useSelector } from "react-redux"
+import { ThunkDispatch } from 'redux-thunk';
+import { useNavigate } from 'react-router-dom'
+import { useAuth0 } from "@auth0/auth0-react"
+import { ExtraArgumentType } from "../../thunks/userThunks";
+import { AnyAction } from "@reduxjs/toolkit";
 
 const NotificationsPage = () => {
     const {userInfo}=useSelector((state:RootState)=>state.auth)
-    
+    const dispatch = useDispatch<ThunkDispatch<RootState, ExtraArgumentType, AnyAction>>();
+
     const [allnotifications,setAllnotifications]=useState([])
     const [allsuggestions,setAllsuggestions]=useState([])
 
@@ -53,6 +60,18 @@ const NotificationsPage = () => {
         clearUnreadNotifications()
     },[getNotifications,getSuggestions,clearUnreadNotifications])
 
+    const {logout:auth0Logout}=useAuth0()
+    const  navigate=useNavigate()
+
+    useEffect(()=>{
+      if(!userInfo){
+          navigate('/')
+      }else if(userInfo?.isProfileFinished===false){
+          navigate('/finishprofilepage')
+      }else{
+          dispatch(checkBlockStatus(userInfo,userInfo?.token,navigate,auth0Logout))       
+      }
+    },[auth0Logout, dispatch, navigate, userInfo])
   
   return (
     <div className="w-screen h-screen flex flex-col md:flex-row">

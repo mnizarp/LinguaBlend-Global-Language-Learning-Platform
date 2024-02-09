@@ -89,17 +89,27 @@ const ReportsPage:React.FC=()=>{
                     page == 'user' ?
                     <div className="w-screen container space-y-7 p-3">
                        {
+                        userReports?.length > 0 ? 
                         userReports?.map((report)=>(
                            <UserReportCard report={report} />
                         ))
+                        :
+                        <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-lg font-semibold text-gray-500">No Reports available.</p>
+                        </div>
                        }
                     </div>
                     :
                     <div className="w-screen container space-y-7 p-3">
                       {
+                        postReports?.length > 0 ?
                         postReports?.map((report)=>(
                            <PostReportCard setUpdate={setUpdate} report={report} />
                         ))
+                        :
+                        <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-lg font-semibold text-gray-500">No Reports available.</p>
+                        </div>
                       }
                     </div>
                 }

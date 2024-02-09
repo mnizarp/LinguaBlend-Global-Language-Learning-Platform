@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clear_unread_notifications = exports.get_unread_notifications = exports.getNotifications = exports.getSuggestions = exports.searchUsers = exports.get_followings = exports.get_user_block_status = exports.report_user = exports.edit_profile = exports.follow_unfollow = exports.logout = exports.get_user_details = exports.finishProfile = exports.login_user = exports.verifyOtp = exports.create_google_user = exports.create_user = void 0;
+exports.contactAdmin = exports.clear_unread_notifications = exports.get_unread_notifications = exports.getNotifications = exports.getSuggestions = exports.searchUsers = exports.get_followings = exports.get_user_block_status = exports.report_user = exports.edit_profile = exports.follow_unfollow = exports.logout = exports.get_user_details = exports.finishProfile = exports.login_user = exports.verifyOtp = exports.clearOtp = exports.resendOtp = exports.create_google_user = exports.create_user = void 0;
 const userModel_1 = require("../../models/userModel");
 const countryModel_1 = require("../../models/countryModel");
 const languageModel_1 = require("../../models/languageModel");
@@ -27,6 +27,7 @@ const otpModel_1 = require("../../models/otpModel");
 const cloudinary_1 = __importDefault(require("../../utils/cloudinary"));
 const chatModel_1 = require("../../models/chatModel");
 const notificationModel_1 = require("../../models/notificationModel");
+const contactAdminModel_1 = require("../../models/contactAdminModel");
 const create_user = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, email, password } = req.body;
@@ -158,6 +159,57 @@ const create_google_user = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.create_google_user = create_google_user;
+const resendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userEmail } = req.body;
+        const OTP = otp_generator_1.default.generate(4, {
+            digits: true,
+            upperCaseAlphabets: false,
+            lowerCaseAlphabets: false,
+            specialChars: false,
+        });
+        const transporter = nodemailer_1.default.createTransport({
+            service: "gmail",
+            auth: {
+                user: "nizarp666@gmail.com",
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+        var mailOptions = {
+            from: "nizarp666@gmail.com",
+            to: userEmail,
+            subject: "OTP VERIFICATION",
+            text: "PLEASE ENTER THE OTP FOR VERIFY YOUR EMAIL " + OTP,
+        };
+        transporter.sendMail(mailOptions, function (error, info) { });
+        const otps = yield otpModel_1.Otp.findOne({ email: userEmail });
+        if (!otps) {
+            const otp = new otpModel_1.Otp({ email: userEmail, otp: OTP });
+            yield otp.save();
+        }
+        else {
+            yield otpModel_1.Otp.updateOne({ email: userEmail }, { $set: { otp: OTP } });
+        }
+        res.status(200).json({ message: 'Otp sent successfully' });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'Otp sending failed' });
+    }
+});
+exports.resendOtp = resendOtp;
+const clearOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userEmail } = req.body;
+        yield otpModel_1.Otp.deleteOne({ email: userEmail });
+        res.status(200).json({ message: 'otp cleared' });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'otp clearing failed' });
+    }
+});
+exports.clearOtp = clearOtp;
 const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, otp } = req.body;
@@ -536,3 +588,20 @@ const clear_unread_notifications = (req, res) => __awaiter(void 0, void 0, void 
     }
 });
 exports.clear_unread_notifications = clear_unread_notifications;
+const contactAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userName, userEmail, content } = req.body;
+        const newadmincontact = new contactAdminModel_1.ContactAdmin({
+            user_name: userName,
+            user_email: userEmail,
+            content
+        });
+        newadmincontact.save();
+        res.status(200).json({ message: 'contacted admin successfully' });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'contacting admin failed' });
+    }
+});
+exports.contactAdmin = contactAdmin;

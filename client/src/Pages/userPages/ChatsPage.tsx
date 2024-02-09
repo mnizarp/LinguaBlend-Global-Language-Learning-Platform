@@ -1,12 +1,35 @@
-import  { useState } from 'react'
+import  { useEffect,useState } from 'react'
 import HeadMobile from '../../Components/user/HeadMoblile'
 import MenuBar from '../../Components/user/MenuBar'
 import FootMobile from '../../Components/user/FootMobile'
 import ChatList from '../../Components/user/ChatList'
 import PersonalChatBox from '../../Components/user/PersonalChatBox'
 
+import { useAuth0 } from "@auth0/auth0-react"
+import { ExtraArgumentType } from "../../thunks/userThunks";
+import { AnyAction } from "@reduxjs/toolkit";
+import { RootState } from "../../store/rootReducer"
+import { checkBlockStatus } from "../../thunks/userThunks"
+import { useDispatch, useSelector } from "react-redux"
+import { ThunkDispatch } from 'redux-thunk';
+import { useNavigate } from 'react-router-dom'
+
 const ChatsPage = () => {
+  const dispatch = useDispatch<ThunkDispatch<RootState, ExtraArgumentType, AnyAction>>();
+  const {userInfo}=useSelector((state:RootState)=>state.auth)
+  const {logout:auth0Logout}=useAuth0()
+  const  navigate=useNavigate()
+  
     const [chatBox,setChatBox]=useState('')
+    useEffect(()=>{
+      if(!userInfo){
+          navigate('/')
+      }else if(userInfo?.isProfileFinished===false){
+          navigate('/finishprofilepage')
+      }else{
+          dispatch(checkBlockStatus(userInfo,userInfo?.token,navigate,auth0Logout))       
+      }
+    },[auth0Logout, dispatch, navigate, userInfo])
   return (
     <div className="w-screen  h-screen flex flex-col  md:flex-row ">
     <div className=" w-screen h-[8%]  md:hidden">

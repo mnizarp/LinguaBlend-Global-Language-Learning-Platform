@@ -29,7 +29,6 @@ const AddPost:React.FC<AddPostProps>=({setNewPostAdded,handlePhotoSelect,image})
        }
     }
 
-
     useEffect(()=>{
       setPostImage(image)
     },[image])

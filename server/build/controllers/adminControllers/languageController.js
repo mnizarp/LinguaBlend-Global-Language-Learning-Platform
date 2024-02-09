@@ -8,19 +8,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.language_list_unlist = exports.getLanguages = exports.addNewLanguage = void 0;
 const languageModel_1 = require("../../models/languageModel");
+const cloudinary_1 = __importDefault(require("../../utils/cloudinary"));
 const addNewLanguage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
-        const { language } = req.body;
+        const { language, flag } = req.body;
         const languageInCapital = language.toUpperCase();
         const isExists = yield languageModel_1.Language.findOne({ language: languageInCapital });
         if (!isExists) {
+            const uploadResponse = yield cloudinary_1.default.uploader.upload(flag, {
+                upload_preset: "linguaBlend",
+            });
             const newlanguage = new languageModel_1.Language({
                 language: languageInCapital,
-                flag: (_a = req.file) === null || _a === void 0 ? void 0 : _a.filename,
+                flag: uploadResponse.url,
                 list: true,
             });
             yield newlanguage.save();

@@ -12,13 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.edit_comment = exports.report_post = exports.edit_post = exports.delete_post = exports.like_unlike = exports.get_comments = exports.add_comment = exports.get_posts = exports.create_post = void 0;
+exports.get_saved_posts = exports.checkSaved = exports.unsavePost = exports.savePost = exports.edit_comment = exports.report_post = exports.edit_post = exports.delete_post = exports.like_unlike = exports.get_comments = exports.add_comment = exports.get_posts = exports.create_post = void 0;
 const postModel_1 = require("../../models/postModel");
 const commentModel_1 = require("../../models/commentModel");
 const mongoose_1 = __importDefault(require("mongoose"));
 const reportModel_1 = require("../../models/reportModel");
 const cloudinary_1 = __importDefault(require("../../utils/cloudinary"));
 const notificationModel_1 = require("../../models/notificationModel");
+const savedModel_1 = require("../../models/savedModel");
 const create_post = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { caption, userId, postImage } = req.body;
@@ -273,3 +274,114 @@ const edit_comment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.edit_comment = edit_comment;
+const savePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.userId;
+        const { postId } = req.body;
+        const newsavedpost = new savedModel_1.Saved({
+            post_id: postId,
+            user_id: userId
+        });
+        yield newsavedpost.save();
+        res.status(200).json({ message: 'post saved successfully' });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'post saving failed' });
+    }
+});
+exports.savePost = savePost;
+const unsavePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.userId;
+        const { postId } = req.body;
+        yield savedModel_1.Saved.deleteOne({ user_id: userId, post_id: postId });
+        res.status(200).json({ message: 'post unsaved successfully' });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'post unsaving failed' });
+    }
+});
+exports.unsavePost = unsavePost;
+const checkSaved = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.userId;
+        const { postId } = req.body;
+        const isSaved = yield savedModel_1.Saved.findOne({ user_id: userId, post_id: postId });
+        if (isSaved) {
+            res.status(200).json({ message: 'post saved checking successfull', saved: true });
+        }
+        else {
+            res.status(200).json({ message: 'post saved checking successfull', saved: false });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'post saved checking failed' });
+    }
+});
+exports.checkSaved = checkSaved;
+const get_saved_posts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    try {
+        const userId = (_b = req.userId) === null || _b === void 0 ? void 0 : _b.toString();
+        const userIdObject = new mongoose_1.default.Types.ObjectId(userId);
+        const savedpostids = yield savedModel_1.Saved.aggregate([
+            {
+                $match: { user_id: userIdObject }
+            },
+            {
+                $group: {
+                    _id: null,
+                    postIds: { $push: "$post_id" }
+                }
+            },
+            {
+                $project: {
+                    postIds: 1
+                }
+            }
+        ]);
+        if (savedpostids[0]) {
+            const allsavedposts = yield postModel_1.Post.aggregate([
+                {
+                    $match: { isDeleted: false, isHide: false, _id: { $in: [...savedpostids[0].postIds] } },
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "user_id",
+                        foreignField: "_id",
+                        as: "user",
+                    },
+                },
+                {
+                    $unwind: "$user",
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        post_image: 1,
+                        likes: 1,
+                        caption: 1,
+                        "user.name": 1,
+                        "user._id": 1,
+                        "user.photo": 1,
+                        createdAt: 1,
+                    },
+                },
+                {
+                    $sort: { createdAt: -1 },
+                },
+            ]);
+            res.status(200).json(allsavedposts);
+        }
+        res.status(200);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'fetching saved posts failed' });
+    }
+});
+exports.get_saved_posts = get_saved_posts;

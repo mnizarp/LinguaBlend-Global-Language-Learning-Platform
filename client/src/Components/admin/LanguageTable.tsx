@@ -175,7 +175,7 @@ export function LanguageTable({languageAdded}:LanguageTableProps) {
                     </TableCell>
                     <TableCell key={row.id}>
                       {
-                        <img className="h-10 w-10" src={`${PHOTO_BASE_URL}${row.original.flag}`} alt=""/>
+                        <img className="h-10 w-10" src={`${row.original.flag}`} alt=""/>
                        } 
                     </TableCell>
                     <TableCell key={row.id}>

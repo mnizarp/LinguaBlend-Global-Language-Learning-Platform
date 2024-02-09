@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import io from 'socket.io-client'
-import Lottie from 'react-lottie'
-import animationData from '../../Animations/lottie_typing.json'
+// import Lottie from 'react-lottie'
+// import animationData from '../../Animations/lottie_typing.json'
 import { RootState } from "../../store/rootReducer"
 import { Socket } from 'socket.io-client';
 import { ENDPOINT } from "../../constants"
 import { useGetUserDetailsMutation } from "../../slices/usersApiSlice"
 import { useClearUnreadMessagesMutation, useGetMessagesMutation, useSendMessageMutation } from "../../slices/chatsApiSlice"
+import * as Yup from 'yup';
+import EmojiPicker from 'emoji-picker-react';
+
 let socket:Socket,selectedChatCompare:string ;
  
 interface PersonalChatBoxProps{
@@ -34,17 +37,19 @@ const PersonalChatBox:React.FC<PersonalChatBoxProps>=({chatBox,setChatBox})=>{
     const [socketConnected, setsocketConnected] = useState(false)
     const [selectChat,setSelectChat]=useState()
 
-    const [typing,setTyping]=useState(false)
-    const [isTyping,setIsTyping]=useState(false)
+    // const [typing,setTyping]=useState(false)
+    // const [isTyping,setIsTyping]=useState(false)
 
-    const defaultOptions={
-        loop:true,
-        autoplay:true,
-        animationData:animationData,
-        rendererSettings:{
-            preserveAspectRatio:'xMidYMid slice'
-        }
-    }
+    const [isEmojiPickerVisible,setIsEmojiPickerVisible]=useState(false)
+
+    // const defaultOptions={
+    //     loop:true,
+    //     autoplay:true,
+    //     animationData:animationData,
+    //     rendererSettings:{
+    //         preserveAspectRatio:'xMidYMid slice'
+    //     }
+    // }
      
     const [getUserDetails]=useGetUserDetailsMutation()
 
@@ -62,8 +67,8 @@ const PersonalChatBox:React.FC<PersonalChatBoxProps>=({chatBox,setChatBox})=>{
         socket=io(ENDPOINT)
         socket.emit('setup',userInfo)
         socket.on('connected',()=>setsocketConnected(true))
-        socket.on('typing',()=>setIsTyping(true))
-        socket.on('stop typing',()=>setIsTyping(false))
+        // socket.on('typing',()=>setIsTyping(true))
+        // socket.on('stop typing',()=>setIsTyping(false))
     },[userInfo])
 
     const [clearUnreadMessages]=useClearUnreadMessagesMutation()
@@ -123,8 +128,7 @@ const PersonalChatBox:React.FC<PersonalChatBoxProps>=({chatBox,setChatBox})=>{
             }else{      
             
                 setAllMessages((prevMessages) => [newMessageRecieved?.message, ...prevMessages] as { sender_id:string,content:string,createdAt:Date }[]);
-
-                
+               
             }
         })
 
@@ -135,12 +139,18 @@ const PersonalChatBox:React.FC<PersonalChatBoxProps>=({chatBox,setChatBox})=>{
 
   const [sendMessage]=useSendMessageMutation()
 
+  const messageValidationSchema = Yup.string()
+    .required('Message is required')
+    .min(1, 'message must contain at least 1 character');
+
     const handleSendMessage=async()=>{
         try{
-            setTyping(false)
-            socket.emit('stop typing',selectChat)
+            // setTyping(false)
+            // socket.emit('stop typing',selectChat)
            const token=userInfo?.token
-           const response=await sendMessage({token,datas:{recieverId:chatBox,message}}).unwrap()
+           const trimmedMessage = message.trim();
+          await messageValidationSchema.validate(trimmedMessage);
+           const response=await sendMessage({token,datas:{recieverId:chatBox,message:trimmedMessage}}).unwrap()
            socket.emit('new message',response)
            const fullMessages=[...allMessages]
            fullMessages?.unshift(response?.message)
@@ -155,10 +165,10 @@ const PersonalChatBox:React.FC<PersonalChatBoxProps>=({chatBox,setChatBox})=>{
         setMessage(e.target.value)
         if(!socketConnected) return;
 
-        if(!typing){
-            setTyping(true);
-            socket.emit('typing',selectChat);
-        }
+        // if(!typing){
+        //     setTyping(true);
+        //     socket.emit('typing',selectChat);
+        // }
 
         // const lastTypingTime=new Date().getTime()
         // const timerLength=3000
@@ -170,54 +180,124 @@ const PersonalChatBox:React.FC<PersonalChatBoxProps>=({chatBox,setChatBox})=>{
         //         setTyping(false)
         //     }
         // },timerLength)
-        if(e.target.value==''){
-            setTyping(false)
-            socket.emit('stop typing',selectChat)           
-        }
+
+        // if(e.target.value==''){
+        //     setTyping(false)
+        //     socket.emit('stop typing',selectChat)           
+        // }
     }
 
     return(
-        <div className='border rounded-xl w-full h-full '>
-           <div className="w-full h-[10%] rounded-tl-xl rounded-tr-xl bg-emerald-500 flex items-center p-2">
-                <div className="w-[50%] h-full flex items-center space-x-3">
-                    <img onClick={()=>{
-                        socket.emit('leave chat',selectChat);
-                        setChatBox('')
-                        }} className="w-8 h-8 " src="/assets/icons/icons8-back-64.png" alt=""/>
-                   <img className="w-10 h-10 rounded-full" src={`${user?.photo?.url}`} alt=""/>
-                   <h1 className="text-md md:text-lg font-semibold text-white ">{user?.name}</h1>
-                </div>
-           </div>
-           <div className="w-full h-[80%] space-y-1 p-1 flex flex-col-reverse overflow-y-scroll ">
-           {isTyping && (
+        
+     
+        <div className='border rounded-xl w-full h-full relative'>
+        <div className="w-full h-[10%] rounded-tl-xl rounded-tr-xl bg-emerald-500 flex items-center p-2">
+            <div className="w-[50%] h-full flex items-center space-x-3">
+                <img onClick={() => {
+                    socket.emit('leave chat', selectChat);
+                    setChatBox('')
+                }} className="w-8 h-8 " src="/assets/icons/icons8-back-64.png" alt="" />
+                <img className="w-10 h-10 rounded-full" src={`${user?.photo?.url}`} alt="" />
+                <h1 className="text-md md:text-lg font-semibold text-white ">{user?.name}</h1>
+            </div>
+        </div>
+        <div className="w-full h-[80%] space-y-1 p-1 flex flex-col-reverse overflow-y-scroll">
+            {/* {isTyping && (
                 <div className="w-max p-2 rounded-md bg-slate-200">
-                <Lottie width={50}
-                  options={defaultOptions} />
+                    <Lottie width={50} options={defaultOptions} />
                 </div>
-            )} 
+            )} */}
             {
-                allMessages?.map((message:{sender_id:string,content:string,createdAt:Date})=>(
-                    message?.sender_id==userInfo?._id ? 
-                    <div className="w-max p-2 self-end rounded-md bg-emerald-100">
-                    <h1>{message?.content}</h1>
-                    <p style={{ fontSize: '0.6rem' }} className="float-right" >{message?.createdAt && new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, })}</p>
-                    </div>
-                    :
-                    <div className="w-max p-2 rounded-md bg-slate-200">
-                    <h1>{message?.content}</h1>
-                    <p style={{ fontSize: '0.6rem' }} className="float-right" >{message?.createdAt && new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, })}</p>
-                    </div>
+                allMessages?.map((message: { sender_id: string, content: string, createdAt: Date }) => (
+                    message?.sender_id == userInfo?._id ?
+                        <div className="w-[80%]  h-auto p-2 self-end rounded-md bg-emerald-100">
+                            <h1 className="overflow-hidden break-words" >{message?.content}</h1>
+                            <p style={{ fontSize: '0.6rem' }} className="float-right" >{message?.createdAt && new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, })}</p>
+                        </div>
+                        :
+                        <div className="w-[80%] p-2 rounded-md bg-slate-200">
+                            <h1 className="overflow-hidden break-words" >{message?.content}</h1>
+                            <p style={{ fontSize: '0.6rem' }} className="float-right" >{message?.createdAt && new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, })}</p>
+                        </div>
                 ))
             }
-                    
-           </div>
-           <div className="w-full h-[10%] rounded-bl-xl border-t  rounded-br-xl flex items-center p-2 justify-between">
-              <input onChange={typingHandler} value={message} className="h-full w-[90%] focus:outline-none " placeholder="Type here..." />
-              <div className="h-full w-[10%] flex justify-center items-center">
-                <img onClick={handleSendMessage} className="w-8 h-8" src="/assets/icons/icons8-send-letter-50.png" alt=""/>
-              </div>
-           </div>
         </div>
+        <div className="absolute bottom-0 w-full">
+            {
+                isEmojiPickerVisible && 
+                <EmojiPicker
+                      width="100%"
+                       searchDisabled       
+                       onEmojiClick={(o) => {
+                        
+                        setMessage((prevMessage) => prevMessage + o.emoji);
+                        setIsEmojiPickerVisible(false)
+                      
+                }} />
+
+            }
+            <div className="w-full h-[10%] rounded-bl-xl border-t  rounded-br-xl flex items-center p-2 justify-between">
+                <div className="h-full w-[10%] flex justify-center items-center">
+                    <img onClick={()=>setIsEmojiPickerVisible(!isEmojiPickerVisible)} className="w-7 h-7" src="/assets/icons/icons8-happy-50.png" alt="" />
+                </div>
+                <input onChange={typingHandler} value={message} className="h-full w-[80%] focus:outline-none " placeholder="Type here..." />
+                <div className="h-full w-[10%] flex justify-center items-center">
+                    <img onClick={handleSendMessage} className="w-8 h-8" src="/assets/icons/icons8-send-letter-50.png" alt="" />
+                </div>
+            </div>
+        </div>
+    </div>
+      
+
     )
 }
 export default PersonalChatBox
+
+
+
+
+// <div className='border rounded-xl w-full h-full '>
+        //    <div className="w-full h-[10%] rounded-tl-xl rounded-tr-xl bg-emerald-500 flex items-center p-2">
+        //         <div className="w-[50%] h-full flex items-center space-x-3">
+        //             <img onClick={()=>{
+        //                 socket.emit('leave chat',selectChat);
+        //                 setChatBox('')
+        //                 }} className="w-8 h-8 " src="/assets/icons/icons8-back-64.png" alt=""/>
+        //            <img className="w-10 h-10 rounded-full" src={`${user?.photo?.url}`} alt=""/>
+        //            <h1 className="text-md md:text-lg font-semibold text-white ">{user?.name}</h1>
+        //         </div>
+        //    </div>
+        //    <div className="w-full h-[80%] space-y-1 p-1 flex flex-col-reverse overflow-y-scroll ">
+        //    {isTyping && (
+        //         <div className="w-max p-2 rounded-md bg-slate-200">
+        //         <Lottie width={50}
+        //           options={defaultOptions} />
+        //         </div>
+        //     )} 
+        //     {
+        //         allMessages?.map((message:{sender_id:string,content:string,createdAt:Date})=>(
+        //             message?.sender_id==userInfo?._id ? 
+        //             <div className="w-max p-2 self-end rounded-md bg-emerald-100">
+        //             <h1>{message?.content}</h1>
+        //             <p style={{ fontSize: '0.6rem' }} className="float-right" >{message?.createdAt && new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, })}</p>
+        //             </div>
+        //             :
+        //             <div className="w-max p-2 rounded-md bg-slate-200">
+        //             <h1>{message?.content}</h1>
+        //             <p style={{ fontSize: '0.6rem' }} className="float-right" >{message?.createdAt && new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, })}</p>
+        //             </div>
+        //         ))
+        //     }
+                 
+        //    </div>
+        //    <div className=" ">
+        //    <EmojiPicker onEmojiClick={(o)=>setMessage(message+o.emoji)}/> 
+        //    </div>
+        //    <div className="w-full h-[10%] rounded-bl-xl border-t  rounded-br-xl flex items-center p-2 justify-between">
+           
+        //       <input onChange={typingHandler} value={message} className="h-full w-[90%] focus:outline-none " placeholder="Type here..." />
+        //       <div className="h-full w-[10%] flex justify-center items-center">
+        //         <img onClick={handleSendMessage} className="w-8 h-8" src="/assets/icons/icons8-send-letter-50.png" alt=""/>
+        //       </div>
+        //    </div>
+        // </div>

@@ -13,6 +13,7 @@ import { Otp } from "../../models/otpModel";
 import cloudinary from "../../utils/cloudinary";
 import { Chat } from "../../models/chatModel";
 import { Notification } from "../../models/notificationModel";
+import { ContactAdmin } from "../../models/contactAdminModel";
 
 export const create_user = async (req: Request, res: Response) => {
   try {
@@ -146,6 +147,59 @@ export const create_google_user = async (req: Request, res: Response) => {
     res.status(400);
   }
 };
+
+export const resendOtp=async (req:Request,res:Response)=>{
+  try{
+    
+    const {userEmail}=req.body
+    
+    const OTP = otpGenerator.generate(4, {
+      digits: true,
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "nizarp666@gmail.com",
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+    var mailOptions = {
+      from: "nizarp666@gmail.com",
+      to: userEmail,
+      subject: "OTP VERIFICATION",
+      text: "PLEASE ENTER THE OTP FOR VERIFY YOUR EMAIL " + OTP,
+    };
+    transporter.sendMail(mailOptions, function (error, info) {});
+    const otps = await Otp.findOne({ email: userEmail });
+   
+    if (!otps) {
+      const otp = new Otp({ email: userEmail, otp: OTP });
+      await otp.save();
+    } else {
+      await Otp.updateOne({ email: userEmail }, { $set: { otp: OTP } });
+    }
+
+    res.status(200).json({message:'Otp sent successfully'})
+  }catch(error){
+    console.log(error)
+    res.status(400).json({message:'Otp sending failed'})
+
+  }
+}
+
+export const clearOtp=async(req:Request,res:Response)=>{
+  try {
+    const {userEmail}=req.body
+    await Otp.deleteOne({email:userEmail})
+    res.status(200).json({message:'otp cleared'})
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({message:'otp clearing failed'})
+  }
+}
 
 export const verifyOtp = async (req: Request, res: Response) => {
   try {
@@ -533,3 +587,21 @@ export const clear_unread_notifications = async (
     res.status(400).json({ message: "clearing failed" });
   }
 };
+
+
+export const contactAdmin=async(req:Request,res:Response)=>{
+  try{
+     const {userName,userEmail,content}=req.body
+     const newadmincontact=new ContactAdmin({
+      user_name:userName,
+      user_email:userEmail,
+      content
+     })
+     newadmincontact.save()
+     res.status(200).json({message:'contacted admin successfully'})
+  }catch(error){
+    console.log(error)
+    res.status(400).json({message:'contacting admin failed'})
+  }
+}
+

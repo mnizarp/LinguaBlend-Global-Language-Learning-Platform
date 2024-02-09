@@ -123,7 +123,7 @@ io.on('connection',(socket)=>{
     socket.in(userId).emit('notification recieved',newNotificationRecieved)
   })
 
-
+ 
 
 })       
 

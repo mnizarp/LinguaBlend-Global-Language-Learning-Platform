@@ -1,18 +1,22 @@
 import HeadMobile from "../../Components/user/HeadMoblile"
 import MenuBar from "../../Components/user/MenuBar"
 import FootMobile from "../../Components/user/FootMobile"
-import {  PHOTO_BASE_URL } from "../../constants"
 import { useDispatch, useSelector } from "react-redux"
 import Select from 'react-select';
 import {useNavigate } from "react-router-dom"
 import { ChangeEvent, useCallback, useEffect, useState } from "react"
 import ReactCrop,{Area} from 'react-easy-crop';
 import { setCredentials } from "../../slices/authSlice"
-// import { checkBlockStatus } from "../../thunks/userThunks"
 import { RootState } from "../../store/rootReducer"
 import getCroppedImg from "../../utils/getCroppedImg"
 import { useEditProfileMutation } from "../../slices/usersApiSlice"
 import { useGetAllCountriesMutation, useGetAllLanguagesMutation } from "../../slices/adminApiSlice"
+
+import { useAuth0 } from "@auth0/auth0-react"
+import { ExtraArgumentType } from "../../thunks/userThunks";
+import { AnyAction } from "@reduxjs/toolkit";
+import { checkBlockStatus } from "../../thunks/userThunks"
+import { ThunkDispatch } from 'redux-thunk';
 
 
 interface OptionType {
@@ -84,7 +88,7 @@ const EditProfilePage:React.FC=()=>{
     const CountryOptions = (countries as { country: string; flag: string }[])?.map((country) => ({
       value: country.country,
       label: country.country,
-      imageSrc: `${PHOTO_BASE_URL}${country.flag}`,
+      imageSrc: `${country.flag}`,
     }));
   
     const [getAllLanguages]=useGetAllLanguagesMutation()
@@ -108,7 +112,7 @@ const EditProfilePage:React.FC=()=>{
     const languageOptions = (languages as { language: string; flag: string }[])?.map((language) => ({
       value: language.language,
       label: language.language,
-      imageSrc: `${PHOTO_BASE_URL}${language.flag}`,
+      imageSrc: `${language.flag}`,
     }));
     
 
@@ -218,15 +222,18 @@ const EditProfilePage:React.FC=()=>{
         setConfirmPassword(e.target.value) 
       }
 
+      const {logout:auth0Logout}=useAuth0()
+      const dispatchThunk = useDispatch<ThunkDispatch<RootState, ExtraArgumentType, AnyAction>>();
+
       useEffect(()=>{
         if(!userInfo){
             navigate('/')
         }else if(userInfo?.isProfileFinished===false){
             navigate('/finishprofilepage')
         }else{
-            // dispatch(checkBlockStatus(userInfo?.token, navigate))
+          dispatchThunk(checkBlockStatus(userInfo,userInfo?.token,navigate,auth0Logout))       
         }
-    },[navigate,userInfo,photo,name,email,password,confirmPassword,country,language])
+    },[auth0Logout,dispatchThunk,navigate,userInfo,photo,name,email,password,confirmPassword,country,language])
 
     return(
         <div className="w-screen  h-screen flex flex-col  md:flex-row ">

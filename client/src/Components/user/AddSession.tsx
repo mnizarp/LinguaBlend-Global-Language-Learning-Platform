@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import Select from 'react-select';
 import { saveSession } from '../../slices/sessionSlice';
 import { useGetAllLanguagesMutation } from '../../slices/adminApiSlice';
-import {  PHOTO_BASE_URL } from '../../constants';
 import { RootState } from '../../store/rootReducer';
 import { useCreateSessionMutation } from '../../slices/sessionApiSlice';
 
@@ -83,7 +82,7 @@ const AddSession=()=> {
       const LanguageOptions = (languages as { language: string; flag: string }[])?.map((language) => ({
         value: language?.language,
         label: language?.language,
-        imageSrc: `${PHOTO_BASE_URL}${language?.flag}`,
+        imageSrc: `${language?.flag}`,
       }));
 
       const DifficultyOptions = difficulties?.map((difficulty) => ({

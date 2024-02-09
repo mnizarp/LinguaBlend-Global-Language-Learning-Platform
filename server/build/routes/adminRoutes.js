@@ -24,8 +24,8 @@ const upload = (0, multer_1.default)({
     storage: storage
 });
 adminRouter.post('/login', adminAuthController_1.adminLogin);
-adminRouter.post('/addnewlanguage', upload.single('flag'), languageController_1.addNewLanguage);
-adminRouter.post('/addnewcountry', upload.single('flag'), countryController_1.addNewCountry);
+adminRouter.post('/addnewlanguage', languageController_1.addNewLanguage);
+adminRouter.post('/addnewcountry', countryController_1.addNewCountry);
 adminRouter.get('/getusers', adminAuthMiddleware_1.adminProtect, adminAuthController_1.get_users);
 adminRouter.get('/getlanguages', languageController_1.getLanguages);
 adminRouter.get('/getcountries', countryController_1.getCountries);
@@ -41,4 +41,5 @@ adminRouter.get('/gettrendingposts', adminAuthMiddleware_1.adminProtect, adminPo
 adminRouter.get('/getnewusers', adminAuthMiddleware_1.adminProtect, adminAuthController_1.get_new_users);
 adminRouter.get('/getsessions', adminAuthMiddleware_1.adminProtect, adminAuthController_1.getsessions);
 adminRouter.get('/getallposts', adminAuthMiddleware_1.adminProtect, adminAuthController_1.getAllPosts);
+adminRouter.get('/getadmincontacts', adminAuthMiddleware_1.adminProtect, adminAuthController_1.getAdminContacts);
 exports.default = adminRouter;

@@ -1,15 +1,22 @@
 import { Request, Response } from "express";
 import { Country } from "../../models/countryModel";
+import cloudinary from "../../utils/cloudinary";
+
+
 
 export const addNewCountry = async (req: Request, res: Response) => {
   try {
-    const { country } = req.body;
+    const { country,flag } = req.body;
     const countryInCapital = country.toUpperCase();
     const isExists = await Country.findOne({ country: countryInCapital });
     if (!isExists) {
+      
+      const uploadResponse = await cloudinary.uploader.upload(flag, {
+        upload_preset: "linguaBlend",
+      });
       const newcountry = new Country({
         country: countryInCapital,
-        flag: req.file?.filename,
+        flag:uploadResponse.url,
         list: true,
       });
       await newcountry.save();

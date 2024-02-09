@@ -9,7 +9,6 @@ import { setCredentials } from "../../slices/authSlice";
 // import { useFinishprofileMutation } from "../../slices/usersApiSlice";
 import toast, { Toaster } from "react-hot-toast";
 import getCroppedImg from "../../utils/getCroppedImg";
-import { PHOTO_BASE_URL } from "../../constants";
 import { RootState } from "../../store/rootReducer";
 import { useGetAllCountriesMutation, useGetAllLanguagesMutation } from "../../slices/adminApiSlice";
 import { useFinishProfileMutation } from "../../slices/usersApiSlice";
@@ -80,7 +79,7 @@ const FinishProfile:React.FC=()=>{
   const CountryOptions = (countries as { country: string; flag: string }[])?.map((country) => ({
     value: country.country,
     label: country.country,
-    imageSrc: `${PHOTO_BASE_URL}${country.flag}`,
+    imageSrc: `${country.flag}`,
   }));
 
   const [getAllLanguages]=useGetAllLanguagesMutation()
@@ -103,7 +102,7 @@ const FinishProfile:React.FC=()=>{
   const languageOptions = (languages as { language: string; flag: string }[])?.map((language) => ({
     value: language.language,
     label: language.language,
-    imageSrc: `${PHOTO_BASE_URL}${language.flag}`,
+    imageSrc: `${language.flag}`,
   }));
   
 const handleCountry = (selectedOption: OptionType | null) => {
@@ -186,7 +185,7 @@ const handleCountry = (selectedOption: OptionType | null) => {
 
                 {
                   typeof photo ==='string' ?
-                  <img className="w-32 h-32 rounded-full" src={photo} alt=""/>
+                  <img className="w-32 h-32 object-cover rounded-full" src={photo} alt=""/>
                   :
                   <div className="w-32 h-32 rounded-full bg-slate-300 flex justify-center items-center">
                      <img className="w-3/6 h-3/6" src="/assets/icons/icons8-add-image-48.png" alt=""/>

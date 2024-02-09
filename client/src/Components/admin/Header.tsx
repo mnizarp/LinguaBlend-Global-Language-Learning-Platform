@@ -1,17 +1,20 @@
 
 
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
-
+import { adminLogout } from '../../slices/adminSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '../../store/rootReducer'
 
 const navigation = [
   { name: 'Dashboard', route: '/adminhome' },
   { name: 'Users', route: '/usermanagement' },
   { name: 'Countries', route: '/countrymanagement' },
   { name: 'Languages', route: '/languagemanagement' },
-  { name: 'Reports', route : '/reportmanagement'  }
+  { name: 'Reports', route : '/reportmanagement'  },
+  { name: 'Messages',route:'/adminmessages'}
 ]
 
 function classNames(...classes:string[]) {
@@ -24,6 +27,24 @@ interface Props{
 
 export default function Header(props:Props) {
     const navigate=useNavigate()
+    const dispatch=useDispatch()
+
+    const {adminInfo}=useSelector((state:RootState)=>state.admin)
+    useEffect(()=>{
+        if(!adminInfo){
+           navigate('/admin')
+        }
+    },[adminInfo,navigate])
+
+    const handleAdminLogout=()=>{
+      try {
+        dispatch(adminLogout())
+        navigate('/admin')
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
   return (
     <Disclosure as="nav" className="bg-violet-500">
       {({ open }) => (
@@ -99,7 +120,7 @@ export default function Header(props:Props) {
                     leaveTo="transform opacity-0 scale-95"
                   >
                     <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <Menu.Item>
+                      {/* <Menu.Item>
                         {({ active }) => (
                           <a
                             href="#"
@@ -108,8 +129,8 @@ export default function Header(props:Props) {
                             Your Profile
                           </a>
                         )}
-                      </Menu.Item>
-                      <Menu.Item>
+                      </Menu.Item> */}
+                      {/* <Menu.Item>
                         {({ active }) => (
                           <a
                             href="#"
@@ -118,11 +139,12 @@ export default function Header(props:Props) {
                             Settings
                           </a>
                         )}
-                      </Menu.Item>
+                      </Menu.Item> */}
                       <Menu.Item>
                         {({ active }) => (
                           <a
-                            href="#"
+                            
+                            onClick={handleAdminLogout}
                             className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
                           >
                             Sign out

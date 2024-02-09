@@ -149,7 +149,36 @@ export const adminApiSlice=apiSlice.injectEndpoints({
                     Authorization:`Bearer ${data.token}`
                 }
             })
-        })
+        }),
+        addCountry:builder.mutation({
+            query:(data)=>({
+                url:`${ADMIN_URL}/addnewcountry`,
+                method:'POST',
+                body:data.datas,
+                headers:{
+                    Authorization:`Bearer ${data.token}`
+                }
+            })
+        }),
+        addLanguage:builder.mutation({
+            query:(data)=>({
+                url:`${ADMIN_URL}/addnewlanguage`,
+                method:'POST',
+                body:data.datas,
+                headers:{
+                    Authorization:`Bearer ${data.token}`
+                }
+            })
+        }),
+        getAdminContacts:builder.mutation({
+            query:(data)=>({
+                url:`${ADMIN_URL}/getadmincontacts`,
+                method:'GET',
+                headers:{
+                    Authorization:`Bearer ${data.token}`
+                }
+            })
+        }),
 
     })
 })
@@ -169,5 +198,8 @@ export const {useAdminLoginMutation,
     useGetTrendingPostsMutation,
     useGetNewUsersMutation,
     useGetSessionsMutation,
-    useGetAllPostsMutation
+    useGetAllPostsMutation,
+    useAddCountryMutation,
+    useAddLanguageMutation,
+    useGetAdminContactsMutation
 }=adminApiSlice

@@ -14,10 +14,10 @@ const otpSchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
     },
-    //   createdAt: {
-    //     type: Date,
-    //     default: Date.now,
-    //     index: { expires: 300 },
-    //   },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        index: { expires: 60 },
+    },
 });
 exports.Otp = mongoose_1.default.model('otp', otpSchema);

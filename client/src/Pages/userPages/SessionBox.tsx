@@ -1,6 +1,6 @@
 
 import { useDispatch, useSelector } from 'react-redux'
-import {  ENDPOINT, PHOTO_BASE_URL, ZEGO_APPID, ZEGO_SERVER_SECRET } from '../../constants'
+import {  ENDPOINT,  ZEGO_APPID, ZEGO_SERVER_SECRET } from '../../constants'
 import { quitSession } from '../../slices/sessionSlice';
 import { useCallback, useEffect, useState } from 'react';
 import io, { Socket } from 'socket.io-client'
@@ -8,6 +8,13 @@ import { RootState } from '../../store/rootReducer';
 import {ZegoUIKitPrebuilt} from '@zegocloud/zego-uikit-prebuilt'
 import { useDeleteSessionMutation, useGetAllSessionMessagesMutation,  useLeaveSessionMutation, useSendSessionMessageMutation } from '../../slices/sessionApiSlice';
 let socket:Socket;
+
+import { useAuth0 } from "@auth0/auth0-react"
+import { ExtraArgumentType } from "../../thunks/userThunks";
+import { AnyAction } from "@reduxjs/toolkit";
+import { checkBlockStatus } from "../../thunks/userThunks"
+import { ThunkDispatch } from 'redux-thunk';
+import { useNavigate } from 'react-router-dom'
 
 interface SessionBoxProps{
    setSessionBoxOpen:React.Dispatch<React.SetStateAction<boolean>>
@@ -17,6 +24,7 @@ const SessionBox=({setSessionBoxOpen}:SessionBoxProps)=> {
 
    const {userInfo}=useSelector((state:RootState)=>state.auth)
    const {sessionInfo}=useSelector((state:RootState)=>state.session)
+   const dispatchThunk = useDispatch<ThunkDispatch<RootState, ExtraArgumentType, AnyAction>>();
 
    const dispatch=useDispatch()
  
@@ -109,37 +117,6 @@ const SessionBox=({setSessionBoxOpen}:SessionBoxProps)=> {
       }
    },[sessionInfo,userInfo,getAllSessionMessages])
 
-   // interface AllMembers{
-   //    host:{
-   //       _id:string
-   //       name:string
-   //       photo:{
-   //          url:string
-   //       }
-   //    }
-   //    members:[]
-   // }
-
-   // interface Member{
-   //    _id:string
-   //    name:string
-   //    photo:{
-   //       url:string
-   //    }
-   // }
-  
-   // const [allMembers,setAllMembers]=useState<AllMembers[]>([])
-
-   // const [getSessionAllMembers]=useGetSessionAllMembersMutation()
-   // const getSessionMembers=useCallback(async()=>{
-   //    try {
-   //       const token=userInfo?.token
-   //       const response=await getSessionAllMembers({token,datas:{ sessionId:sessionInfo?._id }}).unwrap()
-   //       setAllMembers(response?.allmembers)
-   //    } catch (error) {
-   //       console.log(error)
-   //    }
-   // },[getSessionAllMembers,sessionInfo,userInfo])
 
    useEffect(()=>{
       
@@ -168,6 +145,17 @@ const SessionBox=({setSessionBoxOpen}:SessionBoxProps)=> {
         };
   })
    
+  const {logout:auth0Logout}=useAuth0()
+  const  navigate=useNavigate()
+  useEffect(()=>{
+     if(!userInfo){
+         navigate('/')
+     }else if(userInfo?.isProfileFinished===false){
+         navigate('/finishprofilepage')
+     }else{
+         dispatchThunk(checkBlockStatus(userInfo,userInfo?.token,navigate,auth0Logout))       
+     }
+   },[auth0Logout, dispatchThunk, navigate, userInfo])
 
      
    useEffect(()=>{
@@ -175,7 +163,6 @@ const SessionBox=({setSessionBoxOpen}:SessionBoxProps)=> {
          setSessionBoxOpen(false)
       }
       getSessionMessages()
-      // getSessionMembers()
    },[getSessionMessages,sessionInfo,setSessionBoxOpen])
 
    // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -197,12 +184,14 @@ const SessionBox=({setSessionBoxOpen}:SessionBoxProps)=> {
        });
    
    }
+
+  
       
   return (
     <div className=' w-screen h-screen '>
     <div className="w-full h-[10%]   bg-emerald-500 flex items-center p-2 justify-between">
          <div className="w-[50%] h-full flex items-center space-x-3">
-            <img className="w-10 h-10 rounded-full" src={`${PHOTO_BASE_URL}${sessionInfo?.language?.flag}`} alt=""/>
+            <img className="w-10 h-10 rounded-full" src={`${sessionInfo?.language?.flag}`} alt=""/>
             <h1 className="text-lg font-semibold text-white ">{sessionInfo?.title}</h1>
          </div>
          <img onClick={sessionBoxClose} className='w-8 h-8' src='/assets/icons/icons8-close-48.png' alt='' />

@@ -5,6 +5,7 @@ import { Report } from "../../models/reportModel";
 import { Session } from "../../models/sessionModel";
 import { Post } from "../../models/postModel";
 import generateToken from "../../utils/generateToken";
+import { ContactAdmin } from "../../models/contactAdminModel";
 export const adminLogin = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -185,3 +186,14 @@ export const getAllPosts = async (req: Request, res: Response) => {
     res.status(400).json({ message: "all posts fetching failed" });
   }
 };
+
+
+export const getAdminContacts=async(req:Request,res:Response)=>{
+  try{
+    const admincontacts=await ContactAdmin.find({}).sort({createdAt:-1})
+    res.status(200).json(admincontacts)
+  }catch(error){
+    console.log(error)
+    res.status(400).json({message:'admin contacts fetching failed'})
+  }
+}

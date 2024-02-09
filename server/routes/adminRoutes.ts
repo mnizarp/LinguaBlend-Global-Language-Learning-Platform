@@ -1,5 +1,5 @@
 import express from 'express'
-import { adminLogin, getAllPosts, get_new_users, get_user_details, get_user_reports, get_users, getsessions, user_block_unblock } from '../controllers/adminControllers/adminAuthController'
+import { adminLogin, getAdminContacts, getAllPosts, get_new_users, get_user_details, get_user_reports, get_users, getsessions, user_block_unblock } from '../controllers/adminControllers/adminAuthController'
 import { addNewLanguage, getLanguages, language_list_unlist } from '../controllers/adminControllers/languageController'
 const adminRouter=express.Router()
 import multer from 'multer'
@@ -22,8 +22,8 @@ const upload=multer({
 })
 
 adminRouter.post('/login',adminLogin)
-adminRouter.post('/addnewlanguage',upload.single('flag'),addNewLanguage)
-adminRouter.post('/addnewcountry',upload.single('flag'),addNewCountry)
+adminRouter.post('/addnewlanguage',addNewLanguage)
+adminRouter.post('/addnewcountry',addNewCountry)
 adminRouter.get('/getusers',adminProtect,get_users)
 adminRouter.get('/getlanguages',getLanguages)
 adminRouter.get('/getcountries',getCountries)
@@ -39,5 +39,7 @@ adminRouter.get('/gettrendingposts',adminProtect,get_trending_posts)
 adminRouter.get('/getnewusers',adminProtect,get_new_users)
 adminRouter.get('/getsessions',adminProtect,getsessions)
 adminRouter.get('/getallposts',adminProtect,getAllPosts)
+adminRouter.get('/getadmincontacts',adminProtect,getAdminContacts)
+
 export default adminRouter
 

@@ -1,5 +1,4 @@
-import axios from "axios"
-import { useState } from "react"
+import { ChangeEvent, useState } from "react"
 import { Button } from "../../../@/components/ui/button"
 import {
   Dialog,
@@ -13,8 +12,10 @@ import {
 import { Input } from "../../../@/components/ui/input"
 import { Label } from "../../../@/components/ui/label"
 import toast from "react-hot-toast"
-import { BASE_URL } from "../../constants"
-
+import { RootState } from "../../store/rootReducer"
+import { useSelector } from "react-redux"
+import { useAddLanguageMutation } from "../../slices/adminApiSlice"
+import * as Yup from 'yup';
 
 interface AddNewLanguageProps {
   setLanguageAdded: React.Dispatch<React.SetStateAction<string>>;
@@ -22,37 +23,50 @@ interface AddNewLanguageProps {
 
 export function AddNewLanguage({setLanguageAdded}:AddNewLanguageProps) {
 
+    const {adminInfo}=useSelector((state:RootState)=>state.admin)
     const [language,setLanguage]=useState('')  
-    const [flag,setFlag]=useState<FileList |string|null>('')
+    const [flag,setFlag]=useState<FileList|ArrayBuffer |string|null>('')
     const [isOpen,setIsOpen]=useState(true)
+   
+    const handlePhotoSelect = (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e?.target?.files?.[0];
+      if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+              const base64String = reader.result;
+              setFlag(base64String);
+          };
+          reader.readAsDataURL(file);
+      }
+  };
+
+   const [addLanguage]=useAddLanguageMutation()
+
+   const languageValidationSchema = Yup.string()
+    .required('language is required')
+    .min(3, 'language must contain at least 3 character');
+
     const handleSave=async()=>{
-        try{
-            const formData=new FormData()
-            if(flag){
-              formData.append('flag',flag[0])
-            }         
-            formData.append('language',language)
-            const response=await axios.post(`${BASE_URL}admin/addnewlanguage`,  formData, {
-                headers: {
-                  'Content-Type': 'multipart/form-data', 
-                }             
-              });
-            if(response.status==200){
-                setLanguageAdded('yes')
-                setIsOpen(false)
-                setLanguage('')
-                setFlag('')
-            }
-        }catch (error: unknown) {
-          const apiError = error as { response?: { status?: number } };
-        
-          if (apiError?.response?.status === 401) {
-            toast.error('Language Already exists');
-          } else {
-            toast.error('An error occurred. Cannot Add language');
-          }
+      try{
+          const trimmedlanguage = language.trim();
+          await languageValidationSchema.validate(trimmedlanguage);
+        await addLanguage({token:adminInfo?.token,datas:{flag,language:trimmedlanguage}})
+          
+              setLanguageAdded('yes')
+              setIsOpen(false)
+              setLanguage('')
+              setFlag('')
+          
+      }catch (error: unknown) {
+        const apiError = error as { response?: { status?: number } };
+      
+        if (apiError?.response?.status === 401) {
+          toast.error('Language Already exists');
+        } else {
+          toast.error('An error occurred. Cannot Add language');
         }
-    }
+      }
+  }
   return (
     <Dialog  >
       <DialogTrigger onClick={()=>setIsOpen(true)} asChild>
@@ -89,7 +103,7 @@ export function AddNewLanguage({setLanguageAdded}:AddNewLanguageProps) {
             <Input
               id="flag"
               type="file"
-              onChange={(e)=>setFlag(e.target.files)}
+              onChange={handlePhotoSelect}
               className="col-span-3"
             />
           </div>

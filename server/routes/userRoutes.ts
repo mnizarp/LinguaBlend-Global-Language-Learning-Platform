@@ -1,11 +1,11 @@
 import express from 'express'
-import { clear_unread_notifications, create_google_user, create_user,edit_profile,finishProfile,follow_unfollow,getNotifications,getSuggestions,get_followings,get_unread_notifications,get_user_block_status,get_user_details,login_user, logout, report_user, searchUsers, verifyOtp } from '../controllers/userControllers/userAuthController'
+import { clearOtp, clear_unread_notifications, contactAdmin, create_google_user, create_user,edit_profile,finishProfile,follow_unfollow,getNotifications,getSuggestions,get_followings,get_unread_notifications,get_user_block_status,get_user_details,login_user, logout, report_user, resendOtp, searchUsers, verifyOtp } from '../controllers/userControllers/userAuthController'
 
 const userRouter=express.Router()
 import { protect } from '../middlewares/authMiddleware'
 import multer from 'multer'
 import path from 'path'
-import { create_post, get_posts,add_comment, get_comments, like_unlike, delete_post, edit_post, report_post, edit_comment } from '../controllers/userControllers/postControllers'
+import { create_post, get_posts,add_comment, get_comments, like_unlike, delete_post, edit_post, report_post, edit_comment, savePost, unsavePost, checkSaved, get_saved_posts } from '../controllers/userControllers/postControllers'
 
 const storage=multer.diskStorage({
     destination:(req,file,cb)=>{
@@ -24,6 +24,8 @@ userRouter.post('/signup',create_user)
 userRouter.post('/signupwithgoogle',create_google_user)
 userRouter.post('/verifyotp',verifyOtp)
 userRouter.post('/login',login_user)
+userRouter.post('/resendotp',resendOtp)
+userRouter.post('/clearotp',clearOtp)
 userRouter.patch('/finishprofile',protect,finishProfile)
 userRouter.post('/addpost',protect,create_post)
 userRouter.get('/getposts',protect,get_posts)
@@ -45,5 +47,11 @@ userRouter.get('/getsuggestions',protect,getSuggestions)
 userRouter.get('/getnotifications',protect,getNotifications)
 userRouter.get('/getunreadnotifications',protect,get_unread_notifications)
 userRouter.patch('/clearunreadnotifications',protect,clear_unread_notifications)
+userRouter.post('/savepost',protect,savePost)
+userRouter.post('/unsavepost',protect,unsavePost)
 userRouter.post('/logout',logout)
+userRouter.post('/checksaved',protect,checkSaved)
+userRouter.get('/getsavedposts',protect,get_saved_posts)
+userRouter.post('/contactadmin',contactAdmin)
+
 export default userRouter

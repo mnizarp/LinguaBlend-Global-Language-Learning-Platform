@@ -18,6 +18,20 @@ export const usersApiSlice=apiSlice.injectEndpoints({
             body:data
          })
         }),
+        resendOtp:builder.mutation({
+            query:(data)=>({
+               url:`${USERS_URL}/resendotp`,
+               method:'POST',
+               body:data
+            })
+           }),
+           clearOtp:builder.mutation({
+            query:(data)=>({
+               url:`${USERS_URL}/clearotp`,
+               method:'POST',
+               body:data
+            })
+           }),
         finishProfile:builder.mutation({
             query:(data)=>({
                 url:`${USERS_URL}/finishprofile`,
@@ -221,7 +235,53 @@ export const usersApiSlice=apiSlice.injectEndpoints({
                     Authorization:`Bearer ${data.token}`
                 }
             })
-        })
+        }),
+        savePost:builder.mutation({
+            query:(data)=>({
+                url:`${USERS_URL}/savepost`,
+                method:'POST',
+                body:data.datas,
+                headers:{
+                    Authorization:`Bearer ${data.token}`
+                }
+            })
+        }),
+        unSavePost:builder.mutation({
+            query:(data)=>({
+                url:`${USERS_URL}/unsavepost`,
+                method:'POST',
+                body:data.datas,
+                headers:{
+                    Authorization:`Bearer ${data.token}`
+                }
+            })
+        }),
+        checkSaved:builder.mutation({
+            query:(data)=>({
+                url:`${USERS_URL}/checksaved`,
+                method:'POST',
+                body:data.datas,
+                headers:{
+                    Authorization:`Bearer ${data.token}`
+                }
+            })
+        }),
+        getSaved:builder.mutation({
+            query:(data)=>({
+                url:`${USERS_URL}/getsavedposts`,
+                method:'GET',
+                headers:{
+                    Authorization:`Bearer ${data.token}`
+                }
+            })
+        }),
+        contactAdmin:builder.mutation({
+            query:(data)=>({
+               url:`${USERS_URL}/contactadmin`,
+               method:'POST',
+               body:data
+            })
+           }),
 
     })
 })
@@ -250,5 +310,12 @@ export const {
     useClearAllUnreadNotificationsMutation,
     useGetProfilePostsMutation,
     useFollowUnfollowMutation,
-    useReportUserMutation
+    useReportUserMutation,
+    useSavePostMutation,
+    useUnSavePostMutation,
+    useCheckSavedMutation,
+    useGetSavedMutation,
+    useResendOtpMutation,
+    useClearOtpMutation,
+    useContactAdminMutation
 }=usersApiSlice

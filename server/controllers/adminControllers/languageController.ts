@@ -1,15 +1,21 @@
 import { Request, Response } from "express";
 import { Language } from "../../models/languageModel";
+import cloudinary from "../../utils/cloudinary";
+
+
 
 export const addNewLanguage = async (req: Request, res: Response) => {
   try {
-    const { language } = req.body;
+    const { language,flag } = req.body;
     const languageInCapital = language.toUpperCase();
     const isExists = await Language.findOne({ language: languageInCapital });
     if (!isExists) {
+      const uploadResponse = await cloudinary.uploader.upload(flag, {
+        upload_preset: "linguaBlend",
+      });
       const newlanguage = new Language({
         language: languageInCapital,
-        flag: req.file?.filename,
+        flag: uploadResponse.url,
         list: true,
       });
       await newlanguage.save();

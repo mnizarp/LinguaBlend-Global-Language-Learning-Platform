@@ -1,6 +1,6 @@
 export const PHOTO_BASE_URL="https://linguablend.live/images/"
 
-export const BASE_URL="https://linguablend.live/api/"
+export const BASE_URL="http://localhost:9009/api/"
 
 export const ENDPOINT='https://linguablend.live'
 
