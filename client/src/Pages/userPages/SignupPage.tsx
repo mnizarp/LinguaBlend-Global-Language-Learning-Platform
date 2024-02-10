@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux"
 import SignupForm from "../../Components/user/SignupForm"
 import { useNavigate } from "react-router-dom"
 import { setCredentials } from "../../slices/authSlice"
-import { ChangeEvent, useEffect, useState } from "react"
+import { ChangeEvent, useEffect, useState,useRef } from "react"
 import toast from "react-hot-toast"
 import axios from "axios"
 import { BASE_URL } from "../../constants"
@@ -23,12 +23,23 @@ const SignupPage:React.FC=()=>{
         }
       }
     },[navigate,userInfo])
+
+    const inputRefs = [
+      useRef<HTMLInputElement>(null),
+      useRef<HTMLInputElement>(null),
+      useRef<HTMLInputElement>(null),
+      useRef<HTMLInputElement>(null)
+    ];
+    
     
     const [n1,setN1]=useState('')
     const handleN1=(e: ChangeEvent<HTMLInputElement>)=>{
       const inputValue = e.target.value;
       if (/^\d*$/.test(inputValue) || inputValue==='') {
         setN1(inputValue);
+        if (inputValue !== '' && inputRefs[1].current) {
+          inputRefs[1].current.focus();
+        }
       }
     }
 
@@ -37,6 +48,9 @@ const SignupPage:React.FC=()=>{
       const inputValue = e.target.value;
       if (/^\d*$/.test(inputValue) || inputValue==='') {
         setN2(inputValue);
+        if (inputValue !== '' && inputRefs[2].current) {
+          inputRefs[2].current.focus();
+        }
       }
     }
 
@@ -45,6 +59,9 @@ const SignupPage:React.FC=()=>{
       const inputValue = e.target.value;
       if (/^\d*$/.test(inputValue) || inputValue==='') {
         setN3(inputValue);
+        if (inputValue !== '' && inputRefs[3].current) {
+          inputRefs[3].current.focus();
+        }
       }
     }
 
@@ -53,6 +70,9 @@ const SignupPage:React.FC=()=>{
       const inputValue = e.target.value;
       if (/^\d*$/.test(inputValue) || inputValue==='') {
         setN4(inputValue);
+        if (inputValue !== '' && inputRefs[4].current) {
+          inputRefs[4].current.focus();
+        }
       }
     }
 
@@ -96,10 +116,10 @@ const SignupPage:React.FC=()=>{
                       <div className="flex flex-col items-center">
                         <p className="text-white text-xs md:text-sm">Enter the otp to verify your email</p>
                       <div className="p-2  h-10 w-max  space-x-1  flex  items-center md:h-12">
-                              <input onChange={handleN1} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n1} />
-                              <input onChange={handleN2} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n2} />
-                              <input onChange={handleN3} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n3} />
-                              <input onChange={handleN4} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n4} />
+                              <input ref={inputRefs[0]}  onChange={handleN1} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n1} />
+                              <input ref={inputRefs[1]}  onChange={handleN2} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n2} />
+                              <input ref={inputRefs[2]}  onChange={handleN3} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n3} />
+                              <input ref={inputRefs[3]}  onChange={handleN4} maxLength={1} className="w-8 h-full bg-opacity-40 rounded-sm bg-slate-100 border border-white p-2"  value={n4} />
                       </div>
                       <MyTimer expiryTimestamp={time} userEmail={email} /> 
                       <button onClick={handleVerify} className="border-2  bg-emerald-300  text-white h-7 text-xs p-1 w-max bg-opacity-60 rounded-lg

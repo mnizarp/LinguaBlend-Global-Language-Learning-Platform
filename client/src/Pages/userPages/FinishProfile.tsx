@@ -12,6 +12,9 @@ import getCroppedImg from "../../utils/getCroppedImg";
 import { RootState } from "../../store/rootReducer";
 import { useGetAllCountriesMutation, useGetAllLanguagesMutation } from "../../slices/adminApiSlice";
 import { useFinishProfileMutation } from "../../slices/usersApiSlice";
+import ReactLoading from "react-loading";
+
+
 interface OptionType {
     value: string;
     label: string;
@@ -113,16 +116,20 @@ const handleCountry = (selectedOption: OptionType | null) => {
     setLanguage(selectedOption?.value ?? '');
   };
 
+  const [loading,setLoading]=useState(false)
+
   const [finishProfile]=useFinishProfileMutation()
   const handleSubmit=async()=>{
     try{
+      setLoading(true)
       const response=await finishProfile({token:userInfo?.token,datas:{photo,language,country,userId:userInfo?._id}}).unwrap()
-
           dispatch(setCredentials({...userInfo,...response}))
+          setLoading(false)
           navigate('/home')
 
   }catch(error){
     console.log(error)
+    setLoading(false)
     toast.error('Profile Not Completed')
   }  
   }
@@ -161,6 +168,21 @@ const handleCountry = (selectedOption: OptionType | null) => {
     return (
         <div className="w-full h-screen p-1 md:p-3 space-y-6 md:space-y-14">
           <Toaster/>
+          {
+            loading ?
+            <div className="  flex flex-col justify-center items-center  fixed  inset-0 z-50  bg-opacity-50 ">
+           <div className=" w-56 md:w-96 h-40 md:h-48 bg-white flex flex-col justify-center items-center">
+            <ReactLoading
+                type="spinningBubbles"
+                color="#0000FF"
+                height={100}
+                width={50}
+            />
+            <h1 className="font-semibold text-md">Please Wait while loading</h1>
+            </div>
+            </div>
+          :
+          <>
             <div className="flex items-center">
                 <img className="w-[15%] h-[4%] md:w-[4%] md:h-[4%]" src="/assets/lb-removebg-previewhh.png" alt="" />
                 <img className="w-[30%] h-[30%] md:w-[10%] md:h-[4%] ml-2" src="/assets/lb-removebg-preview.png" alt="" />               
@@ -228,6 +250,7 @@ const handleCountry = (selectedOption: OptionType | null) => {
             <button onClick={handleDoneCrop} className="bg-blue-600  font-semibold text-sm py-1 px-2 text-white rounded-md">Done</button>
             </div>
                     </div>
+          
               }
              
              <div className="space-y-5 flex flex-col items-center">
@@ -262,13 +285,16 @@ const handleCountry = (selectedOption: OptionType | null) => {
                 }
               
              </div>
+          
              <div className="w-full flex flex-col ">
              <hr className="border w-full border-black opacity-20  "/>
              <p className="text-sm">Contact us:-</p>
              <p className="text-xs">www.linguablend.com</p>
              <p className="text-xs">linguablendofficial@gmail.com</p>
              </div>
-            </div>         
+            </div>  
+            </>
+          }       
         </div>
     )
 }

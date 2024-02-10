@@ -4,5 +4,3 @@ JWT_SECRET_KEY=''
 EMAIL_PASS=""
 CLIENT_PORT=''
 NODE_ENV='development'
-
-mongodb+srv://nizarp666:nizarp666@clusternizar.xidgmam.mongodb.net/linguablend?retryWrites=true&w=majority

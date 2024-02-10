@@ -19,6 +19,7 @@ import { useAuth0 } from "@auth0/auth0-react"
 import { ExtraArgumentType } from "../../thunks/userThunks";
 import { AnyAction } from "@reduxjs/toolkit";
 import { Toaster } from "react-hot-toast";
+import ReactLoading from "react-loading";
 
 const HomePage:React.FC=()=>{
 
@@ -117,6 +118,8 @@ interface User{
    }
 }
 
+   const [addingPostLoading,setAddingPostLoading]=useState(false)
+
     return(
 
 <div className="w-screen h-screen flex flex-col md:flex-row">
@@ -148,7 +151,7 @@ interface User{
               <h1 className="text-lg font-semibold">Search results</h1>
             </div>
             <hr className="my-2" />
-            <div className="w-full h-85 overflow-y-scroll">
+            <div className="w-full h-85 z-50 overflow-y-scroll">
               {users.length > 0 ? (
                 users.map((user: User) => (
                   <div
@@ -157,10 +160,10 @@ interface User{
                       navigate('/profilepage', { state: { user: user?._id } })
                     
                     }}
-                    className="w-full h-14 p-2 flex cursor-pointer items-center space-x-3 hover:bg-gray-100 transition duration-300"
+                    className="w-full h-14  p-2 flex cursor-pointer items-center space-x-3 hover:bg-gray-100 transition duration-300"
                   >
-                    <img className="w-10 h-10 rounded-full" src={`${user?.photo.url}`} alt="" />
-                    <h1 className="text-base font-semibold">{user?.name}</h1>
+                    <img className="w-10 h-10 rounded-full z-50" src={`${user?.photo.url}`} alt="" />
+                    <h1 className="text-base font-semibold z-50">{user?.name}</h1>
                   </div>
                 ))
               ) : (
@@ -174,8 +177,17 @@ interface User{
       )}
     </div>
      <Toaster/>
-    <AddPost setNewPostAdded={setNewPostAdded} handlePhotoSelect={handlePhotoSelect} image={image} />
-
+    <AddPost setNewPostAdded={setNewPostAdded} handlePhotoSelect={handlePhotoSelect} image={image} setAddingPostLoading={setAddingPostLoading} />
+    {
+      addingPostLoading && 
+            <ReactLoading
+                type="spinningBubbles"
+                color="#0000FF"
+                height={100}
+                width={50}
+            />
+    }
+    
     {postImageSettingBox && (
       <div className="fixed p-1 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-black z-10 space-y-2 w-[90%] md:w-[50%] h-[60%] bg-white">
         {selectedImage && (
