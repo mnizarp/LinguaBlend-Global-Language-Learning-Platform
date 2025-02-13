@@ -1,8 +1,8 @@
-export const PHOTO_BASE_URL="https://linguablend.live/images/"
+export const PHOTO_BASE_URL="http://localhost:9009/images/"
 
-export const BASE_URL="https://linguablend.live/api/"
+export const BASE_URL="http://localhost:9009/api/"
 
-export const ENDPOINT='https://linguablend.live'
+export const ENDPOINT='http://localhost:9009'
 
 export const AUTH0_PROVIDER_DOMAIN='dev-dc03s20x7baedxfr.us.auth0.com'
 

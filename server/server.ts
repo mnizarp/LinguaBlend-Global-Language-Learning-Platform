@@ -40,7 +40,7 @@ app.use('/api/admin/',adminRouter)
 app.use('/api/session/',sessionRouter)
 
 if(process.env.NODE_ENV==='production'){
- 
+
   const parentDir = path.resolve(__dirname, '..');
   const staticMiddleware = express.static(path.join(parentDir, 'client', 'dist'));
 
